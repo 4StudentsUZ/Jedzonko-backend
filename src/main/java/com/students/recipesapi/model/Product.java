@@ -1,9 +1,14 @@
 package com.students.recipesapi.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
-import java.util.Set;
+import java.util.List;
 
 @Entity
+@Getter
+@Setter
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -12,10 +17,9 @@ public class Product {
     private String name;
     private String barcode;
 
-    @ManyToMany
-//    @JoinTable(
-//            name = "product_image",
-//            joinColumns = @JoinColumn(name = "product_id"),
-//            inverseJoinColumns = @JoinColumn(name = "image_id"))
-    private Set<Image> images;
+    @ManyToOne
+    private Image image;
+
+    @OneToMany(mappedBy = "product")
+    private List<Ingredient> recipe;
 }

@@ -1,17 +1,25 @@
 package com.students.recipesapi.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import javax.persistence.*;
-import java.util.Set;
 
 @Entity
+@Getter
+@Setter
+@IdClass(IngredientId.class)
 public class Ingredient {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    @ManyToOne
+    @JoinColumn(name = "recipe_id", referencedColumnName = "id")
+    private Recipe recipe;
 
-    @ManyToMany
-    private Set<Recipe> recipe;
+    @Id
+    @ManyToOne
+    @JoinColumn(name = "product_id", referencedColumnName = "id")
+    private Product product;
 
-    @ManyToMany
-    private Set<Product> product;
+    @Column
+    private String note;
 }

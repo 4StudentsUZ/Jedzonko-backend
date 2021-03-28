@@ -14,7 +14,7 @@ import java.util.Collection;
 @Entity
 @Getter
 @Setter
-public class User implements UserDetails {
+public class UserEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -50,7 +50,7 @@ public class User implements UserDetails {
         return true;
     }
 
-    public User(String username, String firstName, String lastName, String email, String password) {
+    public UserEntity(String username, String firstName, String lastName, String email, String password) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -58,6 +58,6 @@ public class User implements UserDetails {
         this.password = password;
     }
 
-    public User() {
+    public UserEntity() {
     }
 }

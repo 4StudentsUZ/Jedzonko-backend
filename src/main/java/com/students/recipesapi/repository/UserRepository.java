@@ -1,30 +1,30 @@
 package com.students.recipesapi.repository;
 
-import com.students.recipesapi.model.User;
+import com.students.recipesapi.model.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryCustom {
+public interface UserRepository extends JpaRepository<UserEntity, Long>, UserRepositoryCustom {
 }
 
 interface UserRepositoryCustom {
-    Optional<User> getUserByEmail(String email);
+    Optional<UserEntity> getUserByEmail(String email);
 
-    Optional<User> getUserByUsername(String username);
+    Optional<UserEntity> getUserByUsername(String username);
 }
 
 class UserRepositoryImpl implements UserRepositoryCustom {
     @PersistenceContext
     EntityManager entityManager;
 
-    public Optional<User> getUserByEmail(String email) {
-        String query = "SELECT u FROM User u WHERE u.email LIKE :email";
+    public Optional<UserEntity> getUserByEmail(String email) {
+        String query = "SELECT u FROM UserEntity u WHERE u.email LIKE :email";
         try {
             return Optional.ofNullable(
-                    (User) entityManager
+                    (UserEntity) entityManager
                             .createQuery(query)
                             .setParameter("email", email)
                             .getSingleResult());
@@ -33,11 +33,11 @@ class UserRepositoryImpl implements UserRepositoryCustom {
         }
     }
 
-    public Optional<User> getUserByUsername(String username) {
-        String query = "SELECT u FROM User u WHERE u.username LIKE :username";
+    public Optional<UserEntity> getUserByUsername(String username) {
+        String query = "SELECT u FROM UserEntity u WHERE u.username LIKE :username";
         try {
             return Optional.ofNullable(
-                    (User) entityManager
+                    (UserEntity) entityManager
                             .createQuery(query)
                             .setParameter("username", username)
                             .getSingleResult());
