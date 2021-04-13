@@ -1,6 +1,6 @@
 package com.students.recipesapi;
 
-import com.students.recipesapi.model.UserEntity;
+import com.students.recipesapi.entity.UserEntity;
 import com.students.recipesapi.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +14,6 @@ public class LoadDatabase {
 
     @Bean
     CommandLineRunner initDatabase(UserRepository userRepository) {
-        return args -> log.info("Preloading " + userRepository.save(new UserEntity("jkow", "Jan", "Kowalski", "jan.kowalski@gmail.com", "$2b$10$skJlwF3pkXBslldjZtIkmOdUJcImTbeWlweqZsJ7FoscY3shfx4Wq")));
+        return args -> log.info("Preloading " + userRepository.save(new UserEntity("jkow@email.pl", "Jan", "Kowalski", "$2b$10$skJlwF3pkXBslldjZtIkmOdUJcImTbeWlweqZsJ7FoscY3shfx4Wq")));
     }
 }

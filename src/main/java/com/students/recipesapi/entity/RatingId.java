@@ -1,4 +1,4 @@
-package com.students.recipesapi.model;
+package com.students.recipesapi.entity;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

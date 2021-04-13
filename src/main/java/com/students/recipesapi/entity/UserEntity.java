@@ -1,6 +1,8 @@
-package com.students.recipesapi.model;
+package com.students.recipesapi.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,11 +11,13 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.Email;
 import java.util.Collection;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 public class UserEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -22,7 +26,6 @@ public class UserEntity implements UserDetails {
     private String username;
     private String firstName;
     private String lastName;
-    private String email;
     private String password;
 
     @Override
@@ -50,14 +53,10 @@ public class UserEntity implements UserDetails {
         return true;
     }
 
-    public UserEntity(String username, String firstName, String lastName, String email, String password) {
+    public UserEntity(String username, String firstName, String lastName, String password) {
         this.username = username;
         this.firstName = firstName;
         this.lastName = lastName;
-        this.email = email;
         this.password = password;
-    }
-
-    public UserEntity() {
     }
 }

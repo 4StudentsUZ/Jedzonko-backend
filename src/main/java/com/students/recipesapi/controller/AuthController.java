@@ -1,13 +1,14 @@
 package com.students.recipesapi.controller;
 
 import com.students.recipesapi.repository.UserRepository;
-import com.students.recipesapi.request.AuthenticationRequest;
+import com.students.recipesapi.model.LoginModel;
 import com.students.recipesapi.security.JwtTokenProvider;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<Map<Object, Object>> login(@RequestBody AuthenticationRequest data) {
+    public ResponseEntity<Map<Object, Object>> login(@RequestBody LoginModel data) throws UsernameNotFoundException {
         try {
             String username = data.getUsername();
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, data.getPassword()));
@@ -41,7 +42,7 @@ public class AuthController {
             model.put("token", token);
             return ResponseEntity.ok(model);
         } catch (AuthenticationException e) {
-            throw new BadCredentialsException("Invalid username/password supplied");
+            throw new BadCredentialsException("Invalid username/password supplied.");
         }
     }
 }

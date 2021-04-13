@@ -1,6 +1,6 @@
 package com.students.recipesapi.repository;
 
-import com.students.recipesapi.model.UserEntity;
+import com.students.recipesapi.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import javax.persistence.EntityManager;
@@ -11,16 +11,16 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, UserRep
 }
 
 interface UserRepositoryCustom {
-    Optional<UserEntity> getUserByEmail(String email);
+    Optional<UserEntity> getByEmail(String email);
 
-    Optional<UserEntity> getUserByUsername(String username);
+    Optional<UserEntity> getByUsername(String username);
 }
 
 class UserRepositoryImpl implements UserRepositoryCustom {
     @PersistenceContext
     EntityManager entityManager;
 
-    public Optional<UserEntity> getUserByEmail(String email) {
+    public Optional<UserEntity> getByEmail(String email) {
         String query = "SELECT u FROM UserEntity u WHERE u.email LIKE :email";
         try {
             return Optional.ofNullable(
@@ -33,7 +33,7 @@ class UserRepositoryImpl implements UserRepositoryCustom {
         }
     }
 
-    public Optional<UserEntity> getUserByUsername(String username) {
+    public Optional<UserEntity> getByUsername(String username) {
         String query = "SELECT u FROM UserEntity u WHERE u.username LIKE :username";
         try {
             return Optional.ofNullable(

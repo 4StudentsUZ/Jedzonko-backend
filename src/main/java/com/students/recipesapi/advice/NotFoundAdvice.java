@@ -1,6 +1,6 @@
 package com.students.recipesapi.advice;
 
-import com.students.recipesapi.exception.UserNotFoundException;
+import com.students.recipesapi.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
-public class UserNotFoundAdvice {
+public class NotFoundAdvice {
     @ResponseBody
-    @ExceptionHandler(UserNotFoundException.class)
+    @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    String userNotFoundHandler(UserNotFoundException e) {
+    String notFoundHandler(NotFoundException e) {
         return e.getMessage();
     }
 }
