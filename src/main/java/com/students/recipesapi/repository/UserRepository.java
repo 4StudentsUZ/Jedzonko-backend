@@ -11,27 +11,13 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, UserRep
 }
 
 interface UserRepositoryCustom {
-    Optional<UserEntity> getByEmail(String email);
-
     Optional<UserEntity> getByUsername(String username);
+    boolean existsByUsername(String username);
 }
 
 class UserRepositoryImpl implements UserRepositoryCustom {
     @PersistenceContext
     EntityManager entityManager;
-
-    public Optional<UserEntity> getByEmail(String email) {
-        String query = "SELECT u FROM UserEntity u WHERE u.email LIKE :email";
-        try {
-            return Optional.ofNullable(
-                    (UserEntity) entityManager
-                            .createQuery(query)
-                            .setParameter("email", email)
-                            .getSingleResult());
-        } catch (Exception e) {
-            return Optional.empty();
-        }
-    }
 
     public Optional<UserEntity> getByUsername(String username) {
         String query = "SELECT u FROM UserEntity u WHERE u.username LIKE :username";
@@ -44,5 +30,13 @@ class UserRepositoryImpl implements UserRepositoryCustom {
         } catch (Exception e) {
             return Optional.empty();
         }
+    }
+
+    public boolean existsByUsername(String username) {
+        String query = "SELECT u FROM UserEntity u WHERE u.username LIKE :username";
+        return entityManager
+                .createQuery(query)
+                .setParameter("username", username)
+                .getResultList().size() != 0;
     }
 }
