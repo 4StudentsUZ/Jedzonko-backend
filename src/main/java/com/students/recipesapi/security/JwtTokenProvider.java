@@ -49,8 +49,12 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) throws UsernameNotFoundException {
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(getUsername(token));
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        try {
+            UserDetails userDetails = this.userDetailsService.loadUserByUsername(getUsername(token));
+            return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        } catch (UsernameNotFoundException e) {
+            return null;
+        }
     }
 
     public String getUsername(String token) {
