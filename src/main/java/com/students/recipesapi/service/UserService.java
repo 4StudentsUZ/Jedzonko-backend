@@ -5,11 +5,13 @@ import com.students.recipesapi.exception.AlreadyExistsException;
 import com.students.recipesapi.exception.InvalidInputException;
 import com.students.recipesapi.exception.NotFoundException;
 import com.students.recipesapi.model.RegisterModel;
+import com.students.recipesapi.model.UserUpdateModel;
 import com.students.recipesapi.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -32,9 +34,10 @@ public class UserService {
     }
 
     public UserEntity register(RegisterModel registerModel) {
-        if (registerModel.getPassword() == null || registerModel.getUsername() == null || registerModel.getUsername().isEmpty() || registerModel.getPassword().isEmpty()) {
-            throw new InvalidInputException("Not all necessary fields have been provided.");
+        if (registerModel.getUsername() == null || registerModel.getUsername().isEmpty()) {
+            throw new InvalidInputException("Haven't provided a valid username.");
         }
+        validatePassword(registerModel.getPassword());
 
         registerModel.setUsername(registerModel.getUsername().trim());
 
@@ -51,5 +54,36 @@ public class UserService {
         userRepository.save(userEntity);
 
         return userEntity;
+    }
+
+    public UserEntity update(String username, UserUpdateModel userUpdateModel) {
+        if (username == null || username.isEmpty()) {
+            throw new InvalidInputException("Tried to update user without a username.");
+        }
+
+        Optional<UserEntity> userEntityOptional = userRepository.findByUsername(username);
+        if (!userEntityOptional.isPresent()) {
+            throw new NotFoundException(String.format("User with username \"%s\" not found.", username));
+        }
+
+        UserEntity userEntity = userEntityOptional.get();
+        if (userUpdateModel.getFirstName() != null) userEntity.setFirstName(userUpdateModel.getFirstName());
+        if (userUpdateModel.getLastName() != null) userEntity.setLastName(userUpdateModel.getLastName());
+        if (userUpdateModel.getPassword() != null) {
+            validatePassword(userUpdateModel.getPassword());
+            userEntity.setPassword(passwordEncoder.encode(userUpdateModel.getPassword()));
+        }
+        userRepository.save(userEntity);
+
+        return userEntity;
+    }
+
+    public void validatePassword(String password) {
+        if (password == null) {
+            throw new InvalidInputException("Password haven't been provided.");
+        }
+        if (password.length() < 8) {
+            throw new InvalidInputException("Provided password is too short.");
+        }
     }
 }

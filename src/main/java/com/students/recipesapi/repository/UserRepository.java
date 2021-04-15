@@ -11,7 +11,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, UserRep
 }
 
 interface UserRepositoryCustom {
-    Optional<UserEntity> getByUsername(String username);
+    Optional<UserEntity> findByUsername(String username);
     boolean existsByUsername(String username);
 }
 
@@ -19,7 +19,7 @@ class UserRepositoryImpl implements UserRepositoryCustom {
     @PersistenceContext
     EntityManager entityManager;
 
-    public Optional<UserEntity> getByUsername(String username) {
+    public Optional<UserEntity> findByUsername(String username) {
         String query = "SELECT u FROM UserEntity u WHERE u.username LIKE :username";
         try {
             return Optional.ofNullable(
