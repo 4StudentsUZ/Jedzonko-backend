@@ -22,18 +22,18 @@ public class UserController {
 
     @GetMapping()
     @ResponseBody
-    List<UserEntity> all() {
-        return userService.findAll();
+    ResponseEntity<List<UserEntity>> all() {
+        return ResponseEntity.ok(userService.findAll());
     }
 
     @GetMapping("/{id}")
     @ResponseBody
-    UserEntity one(@PathVariable Long id) {
-        return userService.findById(id);
+    ResponseEntity<UserEntity> one(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.findById(id));
     }
 
     @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
-    void register(@RequestBody RegisterModel registerModel) throws AlreadyExistsException, InvalidInputException {
-        userService.register(registerModel);
+    ResponseEntity<UserEntity> register(@RequestBody RegisterModel registerModel) throws AlreadyExistsException, InvalidInputException {
+        return ResponseEntity.ok(userService.register(registerModel));
     }
 }
