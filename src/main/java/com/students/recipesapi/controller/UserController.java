@@ -1,6 +1,8 @@
 package com.students.recipesapi.controller;
 
 import com.students.recipesapi.entity.UserEntity;
+import com.students.recipesapi.model.RecoveryModel;
+import com.students.recipesapi.model.RecoveryRequestModel;
 import com.students.recipesapi.model.RegisterModel;
 import com.students.recipesapi.model.UserUpdateModel;
 import com.students.recipesapi.service.UserService;
@@ -26,7 +28,6 @@ public class UserController {
         return ResponseEntity.ok(userService.findAll());
     }
 
-
     @GetMapping("/{id}")
     @ResponseBody
     ResponseEntity<UserEntity> one(@PathVariable Long id) {
@@ -43,5 +44,15 @@ public class UserController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         return ResponseEntity.ok(userService.update(username, userUpdateModel));
+    }
+
+    @PostMapping(value = "/recovery", consumes = "application/json", produces = "application/json")
+    void recovery(@RequestBody RecoveryRequestModel recoveryRequestModel) {
+        userService.sendRecoveryToken(recoveryRequestModel.getUsername());
+    }
+
+    @PostMapping(value = "/reset", consumes = "application/json", produces = "application/json")
+    void recovery(@RequestBody RecoveryModel recoveryModel) {
+        userService.resetPassword(recoveryModel);
     }
 }

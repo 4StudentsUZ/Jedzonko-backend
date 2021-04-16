@@ -1,25 +1,40 @@
 package com.students.recipesapi.service;
 
+import com.students.recipesapi.entity.RecoveryToken;
 import com.students.recipesapi.entity.UserEntity;
-import com.students.recipesapi.exception.AlreadyExistsException;
-import com.students.recipesapi.exception.InvalidInputException;
-import com.students.recipesapi.exception.NotFoundException;
+import com.students.recipesapi.exception.*;
+import com.students.recipesapi.model.RecoveryModel;
 import com.students.recipesapi.model.RegisterModel;
 import com.students.recipesapi.model.UserUpdateModel;
+import com.students.recipesapi.repository.RecoveryTokenRepository;
 import com.students.recipesapi.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import javax.mail.*;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final RecoveryTokenRepository recoveryTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    @Value("${SUPPORT_EMAIL}")
+    private String supportEmail;
+    @Value("${SUPPORT_EMAIL_PASSWORD}")
+    private String supportEmailPassword;
+
+    public UserService(UserRepository userRepository, RecoveryTokenRepository recoveryTokenRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.recoveryTokenRepository = recoveryTokenRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -33,10 +48,14 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException(String.format("User with id %d not found.", userId)));
     }
 
+    public UserEntity findByUsername(String username) {
+        return userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new NotFoundException(String.format("User with username \"%s\" not found.", username)));
+    }
+
     public UserEntity register(RegisterModel registerModel) {
-        if (registerModel.getUsername() == null || registerModel.getUsername().isEmpty()) {
-            throw new InvalidInputException("Haven't provided a valid username.");
-        }
+        validateUsername(registerModel.getUsername());
         validatePassword(registerModel.getPassword());
 
         registerModel.setUsername(registerModel.getUsername().trim());
@@ -78,12 +97,105 @@ public class UserService {
         return userEntity;
     }
 
-    public void validatePassword(String password) {
+    public void sendRecoveryToken(String username) {
+        validateUsername(username);
+
+        UserEntity userEntity = findByUsername(username);
+        RecoveryToken token = generateRecoveryToken(userEntity);
+
+        String subject = "Your recovery token for Jedzonko.pl";
+        String body = String.format("Your recovery token is: %s", token.getToken());
+
+        sendEmail(userEntity.getUsername(), subject, body);
+    }
+
+    public void resetPassword(RecoveryModel recoveryModel) {
+        validateUsername(recoveryModel.getUsername());
+        validatePassword(recoveryModel.getPassword());
+
+        RecoveryToken recoveryToken = recoveryTokenRepository.findByToken(recoveryModel.getToken())
+                .orElseThrow(() -> new ExpiredTokenException("Recovery token has expired or never existed."));
+
+        if (recoveryToken.getExpirationDate().isBefore(LocalDateTime.now(ZoneId.of("Europe/Warsaw")))) {
+            throw new ExpiredTokenException("Recovery token has expired or never existed.");
+        }
+
+        recoveryToken.getUserEntity().setPassword(passwordEncoder.encode(recoveryModel.getPassword()));
+        userRepository.save(recoveryToken.getUserEntity());
+        recoveryTokenRepository.delete(recoveryToken);
+    }
+
+    private void sendEmail(String toEmail, String subject, String body) {
+        final String fromEmail = supportEmail;
+        final String password = supportEmailPassword;
+
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "smtp.gmail.com"); //SMTP Host
+        props.put("mail.smtp.port", "587"); //TLS Port
+        props.put("mail.smtp.auth", "true"); //enable authentication
+        props.put("mail.smtp.starttls.enable", "true"); //enable STARTTLS
+        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
+
+        Authenticator auth = new Authenticator() {
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(fromEmail, password);
+            }
+        };
+        Session session = Session.getInstance(props, auth);
+
+        try {
+            MimeMessage msg = new MimeMessage(session);
+
+            msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
+            msg.addHeader("format", "flowed");
+            msg.addHeader("Content-Transfer-Encoding", "8bit");
+
+            msg.setFrom(new InternetAddress("no_reply@example.com", "NoReply"));
+            msg.setReplyTo(InternetAddress.parse("no_reply@example.com", false));
+            msg.setSentDate(new Date());
+            msg.setSubject(subject, "UTF-8");
+            msg.setText(body, "UTF-8");
+
+            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
+            Transport.send(msg);
+        } catch (Exception e) {
+            throw new SendingEmailException("A problem occurred during sending email.");
+        }
+    }
+
+    private void validatePassword(String password) {
         if (password == null) {
             throw new InvalidInputException("Password haven't been provided.");
         }
         if (password.length() < 8) {
             throw new InvalidInputException("Provided password is too short.");
+        }
+    }
+
+    private void validateUsername(String username) {
+        if (username == null) {
+            throw new InvalidInputException("Username hasn't been provided.");
+        }
+        if (username.length() < 3) {
+            throw new InvalidInputException("Provided username is too short.");
+        }
+    }
+
+    private RecoveryToken generateRecoveryToken(UserEntity userEntity) {
+        RecoveryToken recoveryToken = new RecoveryToken();
+        recoveryToken.setUserEntity(userEntity);
+        recoveryToken.setToken(UUID.randomUUID().toString());
+        recoveryToken.setExpirationDate(LocalDateTime.now(ZoneId.of("Europe/Warsaw")).plusMinutes(5));
+        recoveryTokenRepository.save(recoveryToken);
+        return recoveryToken;
+    }
+
+    @Scheduled(fixedDelay = 5 * 60 * 1000)
+    public void removeExpiredRecoveryTokens() {
+        List<RecoveryToken> list = recoveryTokenRepository.findAll();
+        list = list.stream().filter(t -> t.getExpirationDate().isBefore(LocalDateTime.now(ZoneId.of("Europe/Warsaw")))).collect(Collectors.toList());
+        for (RecoveryToken recoveryToken : list) {
+            recoveryTokenRepository.delete(recoveryToken);
         }
     }
 }
