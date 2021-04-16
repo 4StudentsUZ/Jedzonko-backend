@@ -70,6 +70,7 @@ public class UserService {
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(registerModel.getUsername());
         userEntity.setPassword(passwordEncoder.encode(registerModel.getPassword()));
+        userEntity.setEnabled(true);
         userRepository.save(userEntity);
 
         return userEntity;
@@ -123,6 +124,21 @@ public class UserService {
         recoveryToken.getUserEntity().setPassword(passwordEncoder.encode(recoveryModel.getPassword()));
         userRepository.save(recoveryToken.getUserEntity());
         recoveryTokenRepository.delete(recoveryToken);
+    }
+
+    public void delete(String username) {
+        validateUsername(username);
+
+        UserEntity userEntity = userRepository
+                .findByUsername(username)
+                .orElseThrow(() -> new NotFoundException(String.format("User with username \"%s\" not found.", username)));
+
+        userEntity.setUsername("account@removed.jedzonko.uz.com");
+        userEntity.setFirstName("Account");
+        userEntity.setLastName("Removed");
+        userEntity.setEnabled(false);
+
+        userRepository.save(userEntity);
     }
 
     private void sendEmail(String toEmail, String subject, String body) {

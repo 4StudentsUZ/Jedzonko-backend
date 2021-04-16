@@ -27,6 +27,7 @@ public class UserEntity implements UserDetails {
     private String firstName;
     private String lastName;
     private String password;
+    private boolean enabled;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -50,7 +51,7 @@ public class UserEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 
     public UserEntity(String username, String firstName, String lastName, String password) {

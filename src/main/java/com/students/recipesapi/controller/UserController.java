@@ -55,4 +55,12 @@ public class UserController {
     void recovery(@RequestBody RecoveryModel recoveryModel) {
         userService.resetPassword(recoveryModel);
     }
+
+    @PostMapping(value = "/delete")
+    void delete()
+    {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        userService.delete(username);
+    }
 }
