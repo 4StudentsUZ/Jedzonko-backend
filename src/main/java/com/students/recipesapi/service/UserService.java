@@ -33,7 +33,7 @@ public class UserService {
     @Value("${SUPPORT_EMAIL_PASSWORD}")
     private String supportEmailPassword;
 
-    @Value("${ACCOUNTS_REQUIRE_ACTIVATION:true}")
+    @Value("${ACCOUNTS_REQUIRE_ACTIVATION:false}")
     private boolean accountsRequireActivation;
 
     public UserService(UserRepository userRepository, RecoveryTokenRepository recoveryTokenRepository, PasswordEncoder passwordEncoder) {
@@ -74,12 +74,13 @@ public class UserService {
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(registerModel.getUsername());
         userEntity.setPassword(passwordEncoder.encode(registerModel.getPassword()));
-        userEntity.setEnabled(!accountsRequireActivation);
+        userEntity.setEnabled(!isAccountActivationRequired());
         userRepository.save(userEntity);
 
-        if (accountsRequireActivation) {
-            RecoveryToken token = generateRecoveryToken(userEntity);
+        if (isAccountActivationRequired()) {
+            RecoveryToken token = generateRegistrationToken(userEntity);
             userEntity.setActivationToken(token.getToken());
+            userRepository.save(userEntity);
 
             String subject = "Activate your Jedzonko.pl account";
             String body = "Open this link to activate your jedzonko.pl account: ";
@@ -93,7 +94,7 @@ public class UserService {
     public void activate(String token) {
         RecoveryToken recoveryToken = recoveryTokenRepository
                 .findByToken(token)
-                .orElseThrow(() -> new ExpiredTokenException("This activation link has expired, please create a new account."));
+                .orElseThrow(() -> new ExpiredTokenException("This activation link has expired or never existed, please create a new account."));
 
         recoveryToken.getUserEntity().setEnabled(true);
         userRepository.save(recoveryToken.getUserEntity());
@@ -102,6 +103,10 @@ public class UserService {
     public UserEntity update(String username, UserUpdateModel userUpdateModel) {
         if (username == null || username.isEmpty()) {
             throw new InvalidInputException("Tried to update user without a username.");
+        }
+
+        if (userUpdateModel == null) {
+            throw new InvalidInputException("An update model has to be provided.");
         }
 
         Optional<UserEntity> userEntityOptional = userRepository.findByUsername(username);
@@ -156,7 +161,7 @@ public class UserService {
                 .findByUsername(username)
                 .orElseThrow(() -> new NotFoundException(String.format("User with username \"%s\" not found.", username)));
 
-        userEntity.setUsername("account@removed.jedzonko.uz.com");
+        userEntity.setUsername("");
         userEntity.setFirstName("Account");
         userEntity.setLastName("Removed");
         userEntity.setPassword("");
@@ -165,7 +170,7 @@ public class UserService {
         userRepository.save(userEntity);
     }
 
-    private void sendEmail(String toEmail, String subject, String body) {
+    public void sendEmail(String toEmail, String subject, String body) {
         final String fromEmail = supportEmail;
         final String password = supportEmailPassword;
 
@@ -203,25 +208,25 @@ public class UserService {
         }
     }
 
-    private void validatePassword(String password) {
+    public void validatePassword(String password) {
         if (password == null) {
-            throw new InvalidInputException("Password haven't been provided.");
+            throw new InvalidInputException("Password was not provided.");
         }
         if (password.length() < 8) {
             throw new InvalidInputException("Provided password is too short.");
         }
     }
 
-    private void validateUsername(String username) {
+    public void validateUsername(String username) {
         if (username == null) {
-            throw new InvalidInputException("Username hasn't been provided.");
+            throw new InvalidInputException("Username was not provided.");
         }
         if (username.length() < 3) {
             throw new InvalidInputException("Provided username is too short.");
         }
     }
 
-    private RecoveryToken generateRecoveryToken(UserEntity userEntity) {
+    public RecoveryToken generateRecoveryToken(UserEntity userEntity) {
         RecoveryToken recoveryToken = new RecoveryToken();
         recoveryToken.setUserEntity(userEntity);
         recoveryToken.setToken(UUID.randomUUID().toString());
@@ -230,7 +235,7 @@ public class UserService {
         return recoveryToken;
     }
 
-    private RecoveryToken generateRegistrationToken(UserEntity userEntity) {
+    public RecoveryToken generateRegistrationToken(UserEntity userEntity) {
         RecoveryToken recoveryToken = new RecoveryToken();
         recoveryToken.setUserEntity(userEntity);
         recoveryToken.setToken(UUID.randomUUID().toString());
@@ -249,5 +254,9 @@ public class UserService {
             }
             recoveryTokenRepository.delete(recoveryToken);
         }
+    }
+
+    public boolean isAccountActivationRequired() {
+        return accountsRequireActivation;
     }
 }
