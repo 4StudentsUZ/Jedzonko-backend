@@ -39,6 +39,12 @@ public class UserController {
         return ResponseEntity.ok(userService.register(registerModel));
     }
 
+    @GetMapping(value = "/activate")
+    ResponseEntity<String> activate(@RequestParam String token) {
+        userService.activate(token);
+        return ResponseEntity.ok("Your account is now active.");
+    }
+
     @PutMapping(value = "/update", consumes = "application/json", produces = "application/json")
     ResponseEntity<UserEntity> update(@RequestBody UserUpdateModel userUpdateModel) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

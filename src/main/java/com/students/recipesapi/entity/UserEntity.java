@@ -27,6 +27,7 @@ public class UserEntity implements UserDetails {
     private String firstName;
     private String lastName;
     private String password;
+    private String activationToken;
     private boolean enabled;
 
     @Override

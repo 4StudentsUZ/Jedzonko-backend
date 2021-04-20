@@ -29,8 +29,12 @@ public class UserService {
 
     @Value("${SUPPORT_EMAIL}")
     private String supportEmail;
+
     @Value("${SUPPORT_EMAIL_PASSWORD}")
     private String supportEmailPassword;
+
+    @Value("${ACCOUNTS_REQUIRE_ACTIVATION:true}")
+    private boolean accountsRequireActivation;
 
     public UserService(UserRepository userRepository, RecoveryTokenRepository recoveryTokenRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -70,10 +74,28 @@ public class UserService {
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(registerModel.getUsername());
         userEntity.setPassword(passwordEncoder.encode(registerModel.getPassword()));
-        userEntity.setEnabled(true);
+        userEntity.setEnabled(!accountsRequireActivation);
         userRepository.save(userEntity);
 
+        if (accountsRequireActivation) {
+            RecoveryToken token = generateRecoveryToken(userEntity);
+            userEntity.setActivationToken(token.getToken());
+
+            String subject = "Activate your Jedzonko.pl account";
+            String body = "Open this link to activate your jedzonko.pl account: ";
+            body += "https://uz-recipes-rest.herokuapp.com/users/activate?token=" + token.getToken();
+            sendEmail(userEntity.getUsername(), subject, body);
+        }
+
         return userEntity;
+    }
+
+    public void activate(String token) {
+        RecoveryToken recoveryToken = recoveryTokenRepository
+                .findByToken(token)
+                .orElseThrow(() -> new ExpiredTokenException("This activation link has expired, please create a new account."));
+
+        recoveryToken.getUserEntity().setEnabled(true);
     }
 
     public UserEntity update(String username, UserUpdateModel userUpdateModel) {
@@ -207,11 +229,23 @@ public class UserService {
         return recoveryToken;
     }
 
+    private RecoveryToken generateRegistrationToken(UserEntity userEntity) {
+        RecoveryToken recoveryToken = new RecoveryToken();
+        recoveryToken.setUserEntity(userEntity);
+        recoveryToken.setToken(UUID.randomUUID().toString());
+        recoveryToken.setExpirationDate(LocalDateTime.now(ZoneId.of("Europe/Warsaw")).plusDays(1));
+        recoveryTokenRepository.save(recoveryToken);
+        return recoveryToken;
+    }
+
     @Scheduled(fixedDelay = 5 * 60 * 1000)
     public void removeExpiredRecoveryTokens() {
         List<RecoveryToken> list = recoveryTokenRepository.findAll();
         list = list.stream().filter(t -> t.getExpirationDate().isBefore(LocalDateTime.now(ZoneId.of("Europe/Warsaw")))).collect(Collectors.toList());
         for (RecoveryToken recoveryToken : list) {
+            if (!recoveryToken.getUserEntity().isEnabled()) {
+                userRepository.delete(recoveryToken.getUserEntity());
+            }
             recoveryTokenRepository.delete(recoveryToken);
         }
     }
