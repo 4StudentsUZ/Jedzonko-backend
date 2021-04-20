@@ -136,6 +136,7 @@ public class UserService {
         userEntity.setUsername("account@removed.jedzonko.uz.com");
         userEntity.setFirstName("Account");
         userEntity.setLastName("Removed");
+        userEntity.setPassword("");
         userEntity.setEnabled(false);
 
         userRepository.save(userEntity);
