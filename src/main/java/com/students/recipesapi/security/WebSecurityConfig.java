@@ -48,6 +48,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/users/register").permitAll()
                 .antMatchers("/users/login").permitAll()
+                .antMatchers("/users/activate").permitAll()
                 .anyRequest().authenticated().and()
                 .apply(new JwtConfigurer(jwtTokenProvider));
     }

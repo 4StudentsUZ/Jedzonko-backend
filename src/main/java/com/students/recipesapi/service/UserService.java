@@ -96,6 +96,7 @@ public class UserService {
                 .orElseThrow(() -> new ExpiredTokenException("This activation link has expired, please create a new account."));
 
         recoveryToken.getUserEntity().setEnabled(true);
+        userRepository.save(recoveryToken.getUserEntity());
     }
 
     public UserEntity update(String username, UserUpdateModel userUpdateModel) {
