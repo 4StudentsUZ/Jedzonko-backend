@@ -1,5 +1,6 @@
 package com.students.recipesapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,8 +27,13 @@ public class UserEntity implements UserDetails {
     private String username;
     private String firstName;
     private String lastName;
+
+    @JsonIgnore
     private String password;
+
+    @JsonIgnore
     private String activationToken;
+
     private boolean enabled;
 
     @Override

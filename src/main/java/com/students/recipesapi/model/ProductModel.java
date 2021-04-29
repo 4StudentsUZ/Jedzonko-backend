@@ -5,13 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RegisterModel implements Serializable {
-    private String username;
-    private String password;
+public class ProductModel {
+    public Long id;
+    public String name;
+    public String barcode;
+    public String image;
 }
