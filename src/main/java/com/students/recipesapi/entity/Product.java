@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Getter
@@ -16,10 +15,8 @@ public class Product {
 
     private String name;
     private String barcode;
+    private String image;
 
     @ManyToOne
-    private Image image;
-
-    @OneToMany(mappedBy = "product")
-    private List<Ingredient> recipe;
+    private UserEntity author;
 }
