@@ -50,6 +50,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/users/register").permitAll()
                 .antMatchers("/users/login").permitAll()
                 .antMatchers("/users/activate").permitAll()
+                .antMatchers("/users/reset").permitAll()
+                .antMatchers("/users/recovery").permitAll()
                 .antMatchers("/recipes/get/**").permitAll()
                 .antMatchers("/products/get/**").permitAll()
                 .anyRequest().authenticated().and()
