@@ -204,7 +204,7 @@ public class UserService {
             msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
             Transport.send(msg);
         } catch (Exception e) {
-            throw new SendingEmailException("A problem occurred during sending email.");
+            throw new SendingEmailException("A problem occurred during sending email.\n" + e.getMessage());
         }
     }
 
