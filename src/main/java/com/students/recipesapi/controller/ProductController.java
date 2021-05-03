@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/products")
@@ -21,25 +22,36 @@ public class ProductController {
 
     @GetMapping("/get/all")
     @ResponseBody
-    ResponseEntity<List<Product>> all() {
-        return ResponseEntity.ok(productService.findAll());
+    ResponseEntity<List<ProductModel>> all() {
+        List<Product> products = productService.findAll();
+        List<ProductModel> productModels = products
+                .stream()
+                .map(ProductModel::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(productModels);
     }
 
     @GetMapping("/get/{id}")
     @ResponseBody
-    ResponseEntity<Product> one(@PathVariable Long id) {
-        return ResponseEntity.ok(productService.findById(id));
+    ResponseEntity<ProductModel> one(@PathVariable Long id) {
+        Product product = productService.findById(id);
+        ProductModel productModel = new ProductModel(product);
+        return ResponseEntity.ok(productModel);
     }
 
     @PutMapping(value = "/create/}", consumes = "application/json", produces = "application/json")
-    ResponseEntity<Product> create(@RequestBody ProductModel product, Principal principal) {
-        return ResponseEntity.ok(productService.create(principal.getName(), product));
+    ResponseEntity<ProductModel> create(@RequestBody ProductModel product, Principal principal) {
+        Product returnedProduct = productService.create(principal.getName(), product);
+        ProductModel returnedProductModel = new ProductModel(returnedProduct);
+        return ResponseEntity.ok(returnedProductModel);
     }
 
     @PutMapping(value = "/update/{productId}", consumes = "application/json", produces = "application/json")
-    ResponseEntity<Product> update(@PathVariable Long productId, @RequestBody ProductModel product, Principal principal) {
+    ResponseEntity<ProductModel> update(@PathVariable Long productId, @RequestBody ProductModel product, Principal principal) {
         product.setId(productId);
-        return ResponseEntity.ok(productService.update(principal.getName(), product));
+        Product returnedProduct = productService.update(principal.getName(), product);
+        ProductModel returnedProductModel = new ProductModel(returnedProduct);
+        return ResponseEntity.ok(returnedProductModel);
     }
 
     @DeleteMapping(value = "/delete/{productId}", consumes = "application/json", produces = "application/json")

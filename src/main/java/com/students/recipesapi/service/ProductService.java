@@ -58,9 +58,9 @@ public class ProductService {
             throw new InvalidInputException("Tried to update a recipe user is not allowed to.");
         }
 
-        originalProduct.setName(productModel.getName());
-        originalProduct.setBarcode(productModel.getBarcode());
-        originalProduct.setImage(productModel.getImage());
+        if (productModel.getName() != null) originalProduct.setName(productModel.getName());
+        if (productModel.getBarcode() != null) originalProduct.setBarcode(productModel.getBarcode());
+        if (productModel.getImage() != null) originalProduct.setImage(productModel.getImage());
 
         return productRepository.save(originalProduct);
     }
