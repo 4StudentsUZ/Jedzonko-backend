@@ -1,5 +1,6 @@
 package com.students.recipesapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,6 +17,10 @@ public class Comment {
     @Lob
     private String content;
 
+    private String creationDate;
+    private String modificationDate;
+
+    @JsonIgnore
     @ManyToOne
     private Recipe recipe;
 
