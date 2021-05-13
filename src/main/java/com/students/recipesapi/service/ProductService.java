@@ -8,6 +8,7 @@ import com.students.recipesapi.model.ProductModel;
 import com.students.recipesapi.repository.ProductRepository;
 import com.students.recipesapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,10 +22,21 @@ public class ProductService {
         this.productRepository = productRepository;
     }
 
+    @Transactional
     public List<Product> findAll() {
         return productRepository.findAll();
     }
 
+    @Transactional
+    public List<Product> findAllById(List<Long> ids) {
+        try {
+            return productRepository.findAllById(ids);
+        } catch (Exception e) {
+            throw new NotFoundException("Couldn't find all desired products.");
+        }
+    }
+
+    @Transactional
     public Product findById(Long id) {
         return productRepository
                 .findById(id)

@@ -1,19 +1,13 @@
 package com.students.recipesapi.controller;
 
 import com.students.recipesapi.entity.Recipe;
-import com.students.recipesapi.entity.UserEntity;
-import com.students.recipesapi.model.*;
+import com.students.recipesapi.model.RecipeModel;
 import com.students.recipesapi.service.RecipeService;
-import com.students.recipesapi.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/recipes")
@@ -26,28 +20,21 @@ public class RecipeController {
 
     @GetMapping("/get/all")
     @ResponseBody
-    ResponseEntity<List<RecipeModel>> all() {
+    ResponseEntity<List<Recipe>> all() {
         List<Recipe> recipes = recipeService.findAll();
-        List<RecipeModel> recipeModels = recipes
-                .stream()
-                .map(RecipeModel::new)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(recipeModels);
+        return ResponseEntity.ok(recipes);
     }
 
     @GetMapping("/get/{id}")
     @ResponseBody
-    ResponseEntity<RecipeModel> one(@PathVariable Long id) {
+    ResponseEntity<Recipe> one(@PathVariable Long id) {
         Recipe recipe = recipeService.findById(id);
-        RecipeModel recipeModel = new RecipeModel(recipe);
-        return ResponseEntity.ok(recipeModel);
+        return ResponseEntity.ok(recipe);
     }
 
-    @PostMapping(value = "/create/", consumes = "application/json", produces = "application/json")
-    ResponseEntity<RecipeModel> create(@RequestBody RecipeModel recipe, Principal principal) {
-        Recipe returnedRecipe = recipeService.create(principal.getName(), recipe);
-        RecipeModel returnedRecipeModel = new RecipeModel(returnedRecipe);
-        return ResponseEntity.ok(returnedRecipeModel);
+    @PostMapping(value = "/create", consumes = "application/json", produces = "application/json")
+    ResponseEntity<Recipe> create(@RequestBody RecipeModel recipeModel, Principal principal) {
+        return ResponseEntity.ok(recipeService.create(principal.getName(), recipeModel));
     }
 
     @PutMapping(value = "/update/{recipeId}", consumes = "application/json", produces = "application/json")

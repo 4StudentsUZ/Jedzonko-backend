@@ -8,6 +8,7 @@ import com.students.recipesapi.model.RecipeModel;
 import com.students.recipesapi.repository.RecipeRepository;
 import org.postgresql.util.Base64;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,10 +16,12 @@ import java.util.List;
 public class RecipeService {
     private final RecipeRepository recipeRepository;
     private final UserService userService;
+    private final ProductService productService;
 
-    public RecipeService(RecipeRepository recipeRepository, UserService userService) {
+    public RecipeService(RecipeRepository recipeRepository, UserService userService, ProductService productService) {
         this.recipeRepository = recipeRepository;
         this.userService = userService;
+        this.productService = productService;
     }
 
     public List<Recipe> findAll() {
@@ -31,6 +34,7 @@ public class RecipeService {
                 .orElseThrow(() -> new NotFoundException(String.format("Recipe with id %d not found.", id)));
     }
 
+    @Transactional
     public Recipe create(String username, RecipeModel recipeModel) {
         validateRecipeModelForCreate(recipeModel);
         UserEntity author = requireUser(username);
@@ -38,7 +42,7 @@ public class RecipeService {
         Recipe recipe = new Recipe();
         recipe.setTitle(recipeModel.getTitle());
         recipe.setDescription(recipeModel.getDescription());
-        recipe.setIngredients(recipeModel.getIngredients());
+        recipe.setIngredients(productService.findAllById(recipeModel.getIngredients()));
         recipe.setAuthor(author);
         recipe.setImage(Base64.decode(recipeModel.getImage()));
 
@@ -60,7 +64,8 @@ public class RecipeService {
 
         if (recipeModel.getTitle() != null) originalRecipe.setTitle(recipeModel.getTitle());
         if (recipeModel.getDescription() != null) originalRecipe.setDescription(recipeModel.getDescription());
-        if (recipeModel.getIngredients() != null) originalRecipe.setIngredients(recipeModel.getIngredients());
+        if (recipeModel.getIngredients() != null)
+            originalRecipe.setIngredients(productService.findAllById(recipeModel.getIngredients()));
         if (recipeModel.getImage() != null) originalRecipe.setImage(recipeModel.getImage());
 
         recipeRepository.save(originalRecipe);

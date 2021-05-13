@@ -1,12 +1,13 @@
 package com.students.recipesapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.students.recipesapi.exception.Base64DecodingException;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Base64;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Getter
@@ -24,17 +25,21 @@ public class Recipe {
     @ManyToOne
     private UserEntity author;
 
-    @ElementCollection
-    private List<Long> ingredients;
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<Product> ingredients;
 
-    @Lob
     private byte[] image;
 
     public void setImage(String imageInBase64) {
         if (imageInBase64 == null) return;
-        image = Base64.getDecoder().decode(imageInBase64);
+        try {
+            image = Base64.getDecoder().decode(imageInBase64);
+        } catch (Exception e) {
+            throw new Base64DecodingException("Failed to decode Base64 string.");
+        }
     }
 
+    @JsonIgnore
     public String getImageBase64() {
         return Base64.getEncoder().encodeToString(image);
     }
@@ -42,16 +47,4 @@ public class Recipe {
     public void setImage(byte[] image) {
         this.image = image;
     }
-
-//    @OneToMany(mappedBy = "recipe")
-//    private List<Ingredient> ingredient;
-//
-//    @OneToMany(mappedBy = "recipe")
-//    private List<Rating> rating;
-
-//    @ElementCollection
-//    private List<String> tag;
-//
-//    @ElementCollection
-//    private List<String> images;
 }

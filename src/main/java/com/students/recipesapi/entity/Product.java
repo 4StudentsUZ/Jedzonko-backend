@@ -1,5 +1,7 @@
 package com.students.recipesapi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.students.recipesapi.exception.Base64DecodingException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,6 +19,7 @@ public class Product {
     private String name;
     private String barcode;
 
+    @Basic(fetch = FetchType.EAGER)
     @Lob
     private byte[] image;
 
@@ -25,15 +28,15 @@ public class Product {
 
     public void setImage(String imageInBase64) {
         if (imageInBase64 == null) return;
-        image = Base64.getDecoder().decode(imageInBase64);
+        try {
+            image = Base64.getDecoder().decode(imageInBase64);
+        } catch (Exception e) {
+            throw new Base64DecodingException("Failed to decode Base64 string.");
+        }
     }
 
+    @JsonIgnore
     public String getImageBase64() {
         return Base64.getEncoder().encodeToString(image);
     }
-
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
 }

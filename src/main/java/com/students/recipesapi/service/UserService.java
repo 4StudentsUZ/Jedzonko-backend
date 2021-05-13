@@ -74,6 +74,8 @@ public class UserService {
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(registerModel.getUsername());
         userEntity.setPassword(passwordEncoder.encode(registerModel.getPassword()));
+        userEntity.setFirstName("");
+        userEntity.setLastName("");
         userEntity.setEnabled(!isAccountActivationRequired());
         userRepository.save(userEntity);
 

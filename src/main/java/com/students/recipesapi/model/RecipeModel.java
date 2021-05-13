@@ -1,5 +1,6 @@
 package com.students.recipesapi.model;
 
+import com.students.recipesapi.entity.Product;
 import com.students.recipesapi.entity.Recipe;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,8 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.postgresql.util.Base64;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -25,7 +26,12 @@ public class RecipeModel {
         this.id = recipe.getId();
         this.title = recipe.getTitle();
         this.description = recipe.getDescription();
-        this.ingredients = new ArrayList<>(recipe.getIngredients());
+//        this.ingredients = Collections.emptyList();
+        this.ingredients = recipe.getIngredients()
+                .stream()
+                .map(Product::getId)
+                .collect(Collectors.toList());
+
         if (recipe.getImage() != null) {
             this.image = Base64.encodeBytes(recipe.getImage());
         } else {
