@@ -43,7 +43,7 @@ public class RecipeController {
         return ResponseEntity.ok(recipeModel);
     }
 
-    @PostMapping(value = "/create/}", consumes = "application/json", produces = "application/json")
+    @PostMapping(value = "/create/", consumes = "application/json", produces = "application/json")
     ResponseEntity<RecipeModel> create(@RequestBody RecipeModel recipe, Principal principal) {
         Recipe returnedRecipe = recipeService.create(principal.getName(), recipe);
         RecipeModel returnedRecipeModel = new RecipeModel(returnedRecipe);
