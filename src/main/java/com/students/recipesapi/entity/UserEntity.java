@@ -1,7 +1,6 @@
 package com.students.recipesapi.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.students.recipesapi.projection.UserEntityForRegister;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
