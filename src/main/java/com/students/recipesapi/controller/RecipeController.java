@@ -50,7 +50,7 @@ public class RecipeController {
         return ResponseEntity.ok(returnedRecipeModel);
     }
 
-    @DeleteMapping(value = "/update/{recipeId}", consumes = "application/json", produces = "application/json")
+    @PutMapping(value = "/update/{recipeId}", consumes = "application/json", produces = "application/json")
     ResponseEntity<String> update(@PathVariable Long recipeId, @RequestBody RecipeModel recipeModel, Principal principal) {
         recipeModel.setId(recipeId);
         recipeService.update(principal.getName(), recipeModel);
