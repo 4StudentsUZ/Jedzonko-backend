@@ -39,7 +39,7 @@ public class ProductController {
         return ResponseEntity.ok(productModel);
     }
 
-    @PutMapping(value = "/create/}", consumes = "application/json", produces = "application/json")
+    @PutMapping(value = "/create/", consumes = "application/json", produces = "application/json")
     ResponseEntity<ProductModel> create(@RequestBody ProductModel product, Principal principal) {
         Product returnedProduct = productService.create(principal.getName(), product);
         ProductModel returnedProductModel = new ProductModel(returnedProduct);
