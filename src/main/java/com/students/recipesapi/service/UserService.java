@@ -27,10 +27,10 @@ public class UserService {
     private final RecoveryTokenRepository recoveryTokenRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Value("${SUPPORT_EMAIL}")
+    @Value("${SUPPORT_EMAIL:DefaultEmail}")
     private String supportEmail;
 
-    @Value("${SUPPORT_EMAIL_PASSWORD}")
+    @Value("${SUPPORT_EMAIL_PASSWORD:DefaultPassword}")
     private String supportEmailPassword;
 
     @Value("${ACCOUNTS_REQUIRE_ACTIVATION:false}")
