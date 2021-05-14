@@ -30,6 +30,9 @@ public class Recipe {
     private List<Product> ingredients = new ArrayList<>();
 
     @ElementCollection
+    private List<String> quantities = new ArrayList<>();
+
+    @ElementCollection
     private List<String> tags = new ArrayList<>();
 
     private byte[] image;

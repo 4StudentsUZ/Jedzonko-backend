@@ -43,6 +43,7 @@ public class RecipeService {
         recipe.setTitle(recipeModel.getTitle());
         recipe.setDescription(recipeModel.getDescription());
         recipe.setIngredients(productService.findAllById(recipeModel.getIngredients()));
+        recipe.setQuantities(recipeModel.getQuantities());
         recipe.setTags(recipeModel.getTags());
         recipe.setAuthor(author);
         recipe.setImage(Base64.decode(recipeModel.getImage()));
@@ -65,8 +66,10 @@ public class RecipeService {
 
         if (recipeModel.getTitle() != null) originalRecipe.setTitle(recipeModel.getTitle());
         if (recipeModel.getDescription() != null) originalRecipe.setDescription(recipeModel.getDescription());
-        if (recipeModel.getIngredients() != null)
+        if (recipeModel.getIngredients() != null) {
             originalRecipe.setIngredients(productService.findAllById(recipeModel.getIngredients()));
+            originalRecipe.setQuantities(recipeModel.getQuantities());
+        }
         if (recipeModel.getTags() != null)
             originalRecipe.setTags(recipeModel.getTags());
         if (recipeModel.getImage() != null) originalRecipe.setImage(recipeModel.getImage());
@@ -83,17 +86,27 @@ public class RecipeService {
             throw new InvalidInputException("Recipe description has not been provided.");
         if (recipeModel.getIngredients() == null)
             throw new InvalidInputException("Recipe ingredients have not been provided.");
+        if (recipeModel.getQuantities() == null)
+            throw new InvalidInputException("Recipe quantities have not been provided.");
         if (recipeModel.getIngredients().size() > 50)
             throw new InvalidInputException("Tried to add a recipe with more than 50 products.");
         if (recipeModel.getTags() == null)
             throw new InvalidInputException("Tried to add a recipe without tags.");
         if (recipeModel.getImage() == null)
             throw new InvalidInputException("Tried to add a recipe without an image.");
+        if (recipeModel.getQuantities().size() != recipeModel.getIngredients().size())
+            throw new InvalidInputException("Quantity list doesnt match the size of ingredient list.");
     }
 
     private void validateRecipeModelForUpdate(RecipeModel recipeModel) {
         if (recipeModel.getIngredients() != null && recipeModel.getIngredients().size() > 50) {
             throw new InvalidInputException("Tried to add a recipe with more than 50 products.");
+        }
+        if (recipeModel.getIngredients() != null) {
+            if (recipeModel.getQuantities() == null)
+                throw new InvalidInputException("Recipe quantities have not been provided.");
+            if (recipeModel.getQuantities().size() != recipeModel.getIngredients().size())
+                throw new InvalidInputException("Quantity list doesnt match the size of ingredient list.");
         }
     }
 

@@ -21,6 +21,7 @@ public class RecipeModel {
     private String title;
     private String description;
     private List<Long> ingredients;
+    private List<String> quantities;
     private List<String> tags;
     private String image;
 
@@ -32,6 +33,7 @@ public class RecipeModel {
                 .stream()
                 .map(Product::getId)
                 .collect(Collectors.toList());
+        this.quantities = new ArrayList<>(recipe.getQuantities());
         this.tags = new ArrayList<>(recipe.getTags());
 
         if (recipe.getImage() != null) {
