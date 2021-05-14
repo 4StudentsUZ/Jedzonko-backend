@@ -2,7 +2,6 @@ package com.students.recipesapi.repository;
 
 import com.students.recipesapi.entity.Rating;
 import com.students.recipesapi.entity.Recipe;
-import com.students.recipesapi.entity.RecoveryToken;
 import com.students.recipesapi.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -16,6 +15,7 @@ public interface RatingRepository extends JpaRepository<Rating, Long>, RatingRep
 
 interface RatingRepositoryCustom {
     Optional<Rating> findByUserAndRecipe(UserEntity user, Recipe recipe);
+
     double getAvgForRecipe(Recipe recipe);
 }
 
@@ -40,9 +40,12 @@ class RatingRepositoryImpl implements RatingRepositoryCustom {
     @Override
     public double getAvgForRecipe(Recipe recipe) {
         String query = "SELECT AVG(r.rating) FROM Rating r WHERE r.recipe.id = :recipeId";
-        return (double) entityManager
+        Object result = entityManager
                 .createQuery(query)
                 .setParameter("recipeId", recipe.getId())
                 .getSingleResult();
+
+        if (result != null) return (double) result;
+        else return 0.0;
     }
 }

@@ -27,7 +27,11 @@ public class RatingController {
     }
 
     @PostMapping(value = "/rate", consumes = "application/json", produces = "application/json")
-    ResponseEntity<Rating> create(@RequestBody RatingModel ratingModel, Principal principal) {
-        return ResponseEntity.ok(ratingService.rate(principal.getName(), ratingModel));
+    ResponseEntity<HashMap<String, Object>> create(@RequestBody RatingModel ratingModel, Principal principal) {
+        ratingService.rate(principal.getName(), ratingModel);
+        double avg = ratingService.getAvgForRecipe(ratingModel.getRecipeId());
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("average", avg);
+        return ResponseEntity.ok(result);
     }
 }

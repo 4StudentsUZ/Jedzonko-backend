@@ -20,5 +20,5 @@ public class Rating {
     private Recipe recipe;
 
     @Column
-    private int rating;
+    private double rating;
 }
