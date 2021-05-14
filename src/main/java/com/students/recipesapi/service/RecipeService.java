@@ -43,6 +43,7 @@ public class RecipeService {
         recipe.setTitle(recipeModel.getTitle());
         recipe.setDescription(recipeModel.getDescription());
         recipe.setIngredients(productService.findAllById(recipeModel.getIngredients()));
+        recipe.setTags(recipeModel.getTags());
         recipe.setAuthor(author);
         recipe.setImage(Base64.decode(recipeModel.getImage()));
 
@@ -66,6 +67,8 @@ public class RecipeService {
         if (recipeModel.getDescription() != null) originalRecipe.setDescription(recipeModel.getDescription());
         if (recipeModel.getIngredients() != null)
             originalRecipe.setIngredients(productService.findAllById(recipeModel.getIngredients()));
+        if (recipeModel.getTags() != null)
+            originalRecipe.setTags(recipeModel.getTags());
         if (recipeModel.getImage() != null) originalRecipe.setImage(recipeModel.getImage());
 
         recipeRepository.save(originalRecipe);
@@ -82,6 +85,8 @@ public class RecipeService {
             throw new InvalidInputException("Recipe ingredients have not been provided.");
         if (recipeModel.getIngredients().size() > 50)
             throw new InvalidInputException("Tried to add a recipe with more than 50 products.");
+        if (recipeModel.getTags() == null)
+            throw new InvalidInputException("Tried to add a recipe without tags.");
         if (recipeModel.getImage() == null)
             throw new InvalidInputException("Tried to add a recipe without an image.");
     }

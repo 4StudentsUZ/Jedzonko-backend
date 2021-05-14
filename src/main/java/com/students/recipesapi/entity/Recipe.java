@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -26,7 +27,10 @@ public class Recipe {
     private UserEntity author;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    private List<Product> ingredients;
+    private List<Product> ingredients = new ArrayList<>();
+
+    @ElementCollection
+    private List<String> tags = new ArrayList<>();
 
     private byte[] image;
 
