@@ -2,12 +2,14 @@ package com.students.recipesapi.controller;
 
 import com.students.recipesapi.entity.Recipe;
 import com.students.recipesapi.model.RecipeModel;
+import com.students.recipesapi.model.RecipeResponse;
 import com.students.recipesapi.service.RecipeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/recipes")
@@ -20,21 +22,27 @@ public class RecipeController {
 
     @GetMapping("/get/all")
     @ResponseBody
-    ResponseEntity<List<Recipe>> all() {
-        List<Recipe> recipes = recipeService.findAll();
+    ResponseEntity<List<RecipeResponse>> all() {
+        List<RecipeResponse> recipes = recipeService
+                .findAll()
+                .stream()
+                .map(RecipeResponse::new)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(recipes);
     }
 
     @GetMapping("/get/{id}")
     @ResponseBody
-    ResponseEntity<Recipe> one(@PathVariable Long id) {
-        Recipe recipe = recipeService.findById(id);
+    ResponseEntity<RecipeResponse> one(@PathVariable Long id) {
+        RecipeResponse recipe = new RecipeResponse(recipeService.findById(id));
         return ResponseEntity.ok(recipe);
     }
 
     @PostMapping(value = "/create", consumes = "application/json", produces = "application/json")
-    ResponseEntity<Recipe> create(@RequestBody RecipeModel recipeModel, Principal principal) {
-        return ResponseEntity.ok(recipeService.create(principal.getName(), recipeModel));
+    ResponseEntity<RecipeResponse> create(@RequestBody RecipeModel recipeModel, Principal principal) {
+        Recipe recipe = recipeService.create(principal.getName(), recipeModel);
+        RecipeResponse recipeResponse = new RecipeResponse(recipe);
+        return ResponseEntity.ok(recipeResponse);
     }
 
     @PutMapping(value = "/update/{recipeId}", consumes = "application/json", produces = "application/json")

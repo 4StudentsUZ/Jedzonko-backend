@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.students.recipesapi.exception.Base64DecodingException;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Getter
@@ -21,20 +21,20 @@ public class Recipe {
     private String title;
 
     @Lob
+    @Basic(fetch = FetchType.EAGER)
     private String description;
 
     @ManyToOne
     private UserEntity author;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<Product> ingredients = new ArrayList<>();
+    @OneToMany(mappedBy = "recipe", fetch = FetchType.EAGER)
+    private Set<RecipeIngredient> ingredients;
 
-    @ElementCollection
-    private List<String> quantities = new ArrayList<>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Set<String> tags = new LinkedHashSet<>();
 
-    @ElementCollection
-    private List<String> tags = new ArrayList<>();
-
+    @Lob
+    @Basic(fetch = FetchType.EAGER)
     private byte[] image;
 
     public void setImage(String imageInBase64) {

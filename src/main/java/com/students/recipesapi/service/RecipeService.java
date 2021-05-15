@@ -1,25 +1,30 @@
 package com.students.recipesapi.service;
 
-import com.students.recipesapi.entity.Recipe;
-import com.students.recipesapi.entity.UserEntity;
+import com.students.recipesapi.entity.*;
 import com.students.recipesapi.exception.InvalidInputException;
 import com.students.recipesapi.exception.NotFoundException;
 import com.students.recipesapi.model.RecipeModel;
+import com.students.recipesapi.repository.RecipeIngredientRepository;
 import com.students.recipesapi.repository.RecipeRepository;
 import org.postgresql.util.Base64;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class RecipeService {
     private final RecipeRepository recipeRepository;
+    private final RecipeIngredientRepository ingredientRepository;
     private final UserService userService;
     private final ProductService productService;
 
-    public RecipeService(RecipeRepository recipeRepository, UserService userService, ProductService productService) {
+    public RecipeService(RecipeRepository recipeRepository, RecipeIngredientRepository ingredientRepository, UserService userService, ProductService productService) {
         this.recipeRepository = recipeRepository;
+        this.ingredientRepository = ingredientRepository;
         this.userService = userService;
         this.productService = productService;
     }
@@ -34,7 +39,6 @@ public class RecipeService {
                 .orElseThrow(() -> new NotFoundException(String.format("Recipe with id %d not found.", id)));
     }
 
-    @Transactional
     public Recipe create(String username, RecipeModel recipeModel) {
         validateRecipeModelForCreate(recipeModel);
         UserEntity author = requireUser(username);
@@ -42,13 +46,26 @@ public class RecipeService {
         Recipe recipe = new Recipe();
         recipe.setTitle(recipeModel.getTitle());
         recipe.setDescription(recipeModel.getDescription());
-        recipe.setIngredients(productService.findAllById(recipeModel.getIngredients()));
-        recipe.setQuantities(recipeModel.getQuantities());
-        recipe.setTags(recipeModel.getTags());
+        recipe.setTags(new HashSet<>(recipeModel.getTags()));
         recipe.setAuthor(author);
         recipe.setImage(Base64.decode(recipeModel.getImage()));
 
-        return recipeRepository.save(recipe);
+        recipe = recipeRepository.save(recipe);
+
+        Set<RecipeIngredient> ingredients = new HashSet<>();
+        for (int ingredientIndex = 0; ingredientIndex < recipeModel.getIngredients().size(); ingredientIndex++) {
+            RecipeIngredient ingredient = new RecipeIngredient();
+            Product product = productService.findById(recipeModel.getIngredients().get(ingredientIndex));
+            ingredient.setId(new RecipeIngredientKey(recipe.getId(), product.getId()));
+            ingredient.setRecipe(recipe);
+            ingredient.setProduct(product);
+            ingredient.setQuantity(recipeModel.getQuantities().get(ingredientIndex));
+            ingredient = ingredientRepository.save(ingredient);
+            ingredients.add(ingredient);
+        }
+        recipe.setIngredients(ingredients);
+
+        return recipe;
     }
 
     public void delete(String username, Long recipeId) {
@@ -67,14 +84,31 @@ public class RecipeService {
         if (recipeModel.getTitle() != null) originalRecipe.setTitle(recipeModel.getTitle());
         if (recipeModel.getDescription() != null) originalRecipe.setDescription(recipeModel.getDescription());
         if (recipeModel.getIngredients() != null) {
-            originalRecipe.setIngredients(productService.findAllById(recipeModel.getIngredients()));
-            originalRecipe.setQuantities(recipeModel.getQuantities());
+            deleteIngredientsForRecipe(originalRecipe);
+            Set<RecipeIngredient> ingredients = new HashSet<>();
+            for (int ingredientIndex = 0; ingredientIndex < recipeModel.getIngredients().size(); ingredientIndex++) {
+                RecipeIngredient ingredient = new RecipeIngredient();
+                Product product = productService.findById(recipeModel.getIngredients().get(ingredientIndex));
+                ingredient.setId(new RecipeIngredientKey(originalRecipe.getId(), product.getId()));
+                ingredient.setRecipe(originalRecipe);
+                ingredient.setProduct(product);
+                ingredient.setQuantity(recipeModel.getQuantities().get(ingredientIndex));
+                ingredient = ingredientRepository.save(ingredient);
+                ingredients.add(ingredient);
+            }
+            originalRecipe.setIngredients(ingredients);
         }
         if (recipeModel.getTags() != null)
-            originalRecipe.setTags(recipeModel.getTags());
+            originalRecipe.setTags(new LinkedHashSet<>(recipeModel.getTags()));
         if (recipeModel.getImage() != null) originalRecipe.setImage(recipeModel.getImage());
 
         recipeRepository.save(originalRecipe);
+    }
+
+    @Transactional
+    public void deleteIngredientsForRecipe(Recipe recipe) {
+        List<RecipeIngredient> ingredients = ingredientRepository.findByRecipeId(recipe.getId());
+        ingredientRepository.deleteAll(ingredients);
     }
 
     private void validateRecipeModelForCreate(RecipeModel recipeModel) {
