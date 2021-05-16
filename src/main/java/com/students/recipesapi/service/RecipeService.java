@@ -52,18 +52,25 @@ public class RecipeService {
 
         recipe = recipeRepository.save(recipe);
 
-        Set<RecipeIngredient> ingredients = new HashSet<>();
-        for (int ingredientIndex = 0; ingredientIndex < recipeModel.getIngredients().size(); ingredientIndex++) {
-            RecipeIngredient ingredient = new RecipeIngredient();
-            Product product = productService.findById(recipeModel.getIngredients().get(ingredientIndex));
-            ingredient.setId(new RecipeIngredientKey(recipe.getId(), product.getId()));
-            ingredient.setRecipe(recipe);
-            ingredient.setProduct(product);
-            ingredient.setQuantity(recipeModel.getQuantities().get(ingredientIndex));
-            ingredient = ingredientRepository.save(ingredient);
-            ingredients.add(ingredient);
+        try {
+            Set<RecipeIngredient> ingredients = new HashSet<>();
+            for (int ingredientIndex = 0; ingredientIndex < recipeModel.getIngredients().size(); ingredientIndex++) {
+                RecipeIngredient ingredient = new RecipeIngredient();
+                Product product = productService.findById(recipeModel.getIngredients().get(ingredientIndex));
+                ingredient.setId(new RecipeIngredientKey(recipe.getId(), product.getId()));
+                ingredient.setRecipe(recipe);
+                ingredient.setProduct(product);
+                ingredient.setQuantity(recipeModel.getQuantities().get(ingredientIndex));
+                ingredient = ingredientRepository.save(ingredient);
+                ingredients.add(ingredient);
+            }
+            recipe.setIngredients(ingredients);
         }
-        recipe.setIngredients(ingredients);
+        catch (Exception e)
+        {
+            recipeRepository.delete(recipe);
+            throw new InvalidInputException("Couldn't find the necessary ingredients.");
+        }
 
         return recipe;
     }
@@ -72,10 +79,10 @@ public class RecipeService {
         Recipe recipe = findById(recipeId);
         UserEntity author = userService.findByUsername(username);
         validateAuthorMatch(author, recipe);
-        recipeRepository.deleteById(recipeId);
+        recipeRepository.delete(recipe);
     }
 
-    public void update(String username, RecipeModel recipeModel) {
+    public Recipe update(String username, RecipeModel recipeModel) {
         validateRecipeModelForUpdate(recipeModel);
         UserEntity author = requireUser(username);
         Recipe originalRecipe = findById(recipeModel.getId());
@@ -102,7 +109,7 @@ public class RecipeService {
             originalRecipe.setTags(new LinkedHashSet<>(recipeModel.getTags()));
         if (recipeModel.getImage() != null) originalRecipe.setImage(recipeModel.getImage());
 
-        recipeRepository.save(originalRecipe);
+        return recipeRepository.save(originalRecipe);
     }
 
     @Transactional
