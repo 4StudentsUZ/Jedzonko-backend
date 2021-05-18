@@ -47,7 +47,7 @@ public class RatingTests {
 
     private static final String exampleBase64Image = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADPSURBVEhL7Y1BEsUgCEN7/0v7GaE2YpDWqZs/fRsxCeQom/kKUqzgqOg8MrcU+w9cRhRK9qulGUFFpCvgifi6gC5ft7cyJkShaw10aTgvsCnABV4uENcFiGLvCdpj2kFdJyYFNgVEBaiTArXbMCEKoE4SaqfXhfUCxf4xUQb1MBEtI1EG9b8saHba8UIBRkeo67Z8wttLBTZVSIFNJ5OOxwXijTtUVFDXmGJSxRfY1DPREVN77hZQK9KRy55HqZteF+4WLLPlKPIVpGwuKOUHRXOc8NtT3yEAAAAASUVORK5CYII=";
 
-    private final String registeredUsername = "recipeTests1@gmail.com";
+    private final String registeredUsername = "ratingTests@gmail.com";
 
     private RecipeModel pizzaRecipeModel;
     private Recipe pizzaRecipe;
