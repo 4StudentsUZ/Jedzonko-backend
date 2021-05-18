@@ -58,6 +58,9 @@ public class RatingService {
         if (ratingModel.getRecipeId() == null) {
             throw new InvalidInputException("Recipe id was not provided");
         }
+        if (ratingModel.getRating() == null) {
+            throw new InvalidInputException("Rating was not provided");
+        }
     }
 
     private void validateAuthority(String authorUsername, Rating rating) {

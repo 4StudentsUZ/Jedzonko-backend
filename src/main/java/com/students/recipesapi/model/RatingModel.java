@@ -11,5 +11,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class RatingModel {
     public Long recipeId;
-    public double rating;
+    public Double rating;
 }
