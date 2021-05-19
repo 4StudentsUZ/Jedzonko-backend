@@ -33,6 +33,13 @@ public class RatingService {
         return ratingRepository.getAvgForRecipe(recipe);
     }
 
+    public Rating getUserRatingForRecipe(String username, Long recipeId) {
+        UserEntity userEntity = userService.findByUsername(username);
+        Recipe recipe = recipeService.findById(recipeId);
+        Optional<Rating> optionalRating = ratingRepository.findByUserAndRecipe(userEntity, recipe);
+        return optionalRating.orElseGet(() -> new Rating(null, null, null, 0.0));
+    }
+
     public Rating rate(String username, RatingModel ratingModel) {
         validateRating(ratingModel);
         UserEntity userEntity = userService.findByUsername(username);

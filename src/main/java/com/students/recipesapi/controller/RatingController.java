@@ -34,4 +34,12 @@ public class RatingController {
         result.put("average", avg);
         return ResponseEntity.ok(result);
     }
+
+    @GetMapping(value = "/get/myRatingForRecipe/{recipeId}", produces = "application/json")
+    ResponseEntity<HashMap<String, Object>> getMyRatingForRecipe(@PathVariable Long recipeId, Principal principal) {
+        Rating rating = ratingService.getUserRatingForRecipe(principal.getName(), recipeId);
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("rating", rating.getRating());
+        return ResponseEntity.ok(result);
+    }
 }
