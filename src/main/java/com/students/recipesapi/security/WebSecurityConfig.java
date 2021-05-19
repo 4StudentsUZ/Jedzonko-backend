@@ -55,6 +55,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/recipes/get/*").permitAll()
                 .antMatchers("/products/get/*").permitAll()
                 .antMatchers("/comments/get/forRecipe/*").permitAll()
+                .antMatchers("/ratings/get/forRecipe/*").permitAll()
                 .anyRequest().authenticated().and()
                 .apply(new JwtConfigurer(jwtTokenProvider));
     }
