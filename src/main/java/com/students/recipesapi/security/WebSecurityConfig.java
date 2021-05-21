@@ -53,6 +53,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/users/reset").permitAll()
                 .antMatchers("/users/recovery").permitAll()
                 .antMatchers("/recipes/get/*").permitAll()
+                .antMatchers("/recipes/get").permitAll()
                 .antMatchers("/products/get/*").permitAll()
                 .antMatchers("/comments/get/forRecipe/*").permitAll()
                 .antMatchers("/ratings/get/forRecipe/*").permitAll()

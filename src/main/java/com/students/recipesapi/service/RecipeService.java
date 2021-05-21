@@ -4,16 +4,16 @@ import com.students.recipesapi.entity.*;
 import com.students.recipesapi.exception.InvalidInputException;
 import com.students.recipesapi.exception.NotFoundException;
 import com.students.recipesapi.model.RecipeModel;
+import com.students.recipesapi.repository.RatingRepository;
 import com.students.recipesapi.repository.RecipeIngredientRepository;
 import com.students.recipesapi.repository.RecipeRepository;
 import org.postgresql.util.Base64;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
 
 @Service
 public class RecipeService {
@@ -21,12 +21,14 @@ public class RecipeService {
     private final RecipeIngredientRepository ingredientRepository;
     private final UserService userService;
     private final ProductService productService;
+    private final RatingRepository ratingRepository;
 
-    public RecipeService(RecipeRepository recipeRepository, RecipeIngredientRepository ingredientRepository, UserService userService, ProductService productService) {
+    public RecipeService(RecipeRepository recipeRepository, RecipeIngredientRepository ingredientRepository, UserService userService, ProductService productService, RatingRepository ratingRepository) {
         this.recipeRepository = recipeRepository;
         this.ingredientRepository = ingredientRepository;
         this.userService = userService;
         this.productService = productService;
+        this.ratingRepository = ratingRepository;
     }
 
     public List<Recipe> findAll() {
@@ -39,6 +41,47 @@ public class RecipeService {
                 .orElseThrow(() -> new NotFoundException(String.format("Recipe with id %d not found.", id)));
     }
 
+    @Transactional
+    public List<Recipe> findByQuerySorted(String query, String sort, String direction) {
+        query = query.toLowerCase(Locale.ROOT);
+        sort = sort.toLowerCase(Locale.ROOT);
+        direction = direction.toLowerCase(Locale.ROOT);
+
+        List<Recipe> recipes = recipeRepository.findAllByQuery(query);
+
+        if (!sort.isEmpty()) {
+            Comparator<Recipe> comparator = null;
+
+            switch (sort) {
+                case "title":
+                    comparator = Comparator.comparing(Recipe::getTitle);
+                    break;
+                case "creationdate":
+                    comparator = (r1, r2) -> {
+                        LocalDateTime date1 = LocalDateTime.parse(r1.getCreationDate());
+                        LocalDateTime date2 = LocalDateTime.parse(r2.getCreationDate());
+                        return date1.compareTo(date2);
+                    };
+                    break;
+                case "rating":
+                    for (Recipe r : recipes) {
+                        r.setRating(ratingRepository.getAvgForRecipe(r));
+                    }
+
+                    comparator = Comparator.comparing(Recipe::getRating);
+                    break;
+            }
+
+            if (direction.equals("desc") && comparator != null) {
+                comparator = comparator.reversed();
+            }
+
+            recipes.sort(comparator);
+        }
+
+        return recipes;
+    }
+
     public Recipe create(String username, RecipeModel recipeModel) {
         validateRecipeModelForCreate(recipeModel);
         UserEntity author = requireUser(username);
@@ -49,6 +92,8 @@ public class RecipeService {
         recipe.setTags(new HashSet<>(recipeModel.getTags()));
         recipe.setAuthor(author);
         recipe.setImage(Base64.decode(recipeModel.getImage()));
+        recipe.setCreationDate(LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString());
+        recipe.setModificationDate(LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString());
 
         recipe = recipeRepository.save(recipe);
 
@@ -65,9 +110,7 @@ public class RecipeService {
                 ingredients.add(ingredient);
             }
             recipe.setIngredients(ingredients);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             recipeRepository.delete(recipe);
             throw new InvalidInputException("Couldn't find the necessary ingredients.");
         }
@@ -108,6 +151,7 @@ public class RecipeService {
         if (recipeModel.getTags() != null)
             originalRecipe.setTags(new LinkedHashSet<>(recipeModel.getTags()));
         if (recipeModel.getImage() != null) originalRecipe.setImage(recipeModel.getImage());
+        originalRecipe.setModificationDate(LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString());
 
         return recipeRepository.save(originalRecipe);
     }

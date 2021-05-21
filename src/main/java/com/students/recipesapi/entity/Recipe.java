@@ -37,6 +37,11 @@ public class Recipe {
     @Basic(fetch = FetchType.EAGER)
     private byte[] image;
 
+    private String creationDate;
+    private String modificationDate;
+
+    private Double rating = 0.0;
+
     public void setImage(String imageInBase64) {
         if (imageInBase64 == null) return;
         try {

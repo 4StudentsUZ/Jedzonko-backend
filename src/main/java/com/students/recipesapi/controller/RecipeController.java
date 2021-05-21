@@ -38,6 +38,17 @@ public class RecipeController {
         return ResponseEntity.ok(recipe);
     }
 
+    @GetMapping("/get")
+    @ResponseBody
+    ResponseEntity<List<RecipeResponse>> query(@RequestParam String query, @RequestParam String sort, @RequestParam String direction) {
+        List<RecipeResponse> recipes = recipeService
+                .findByQuerySorted(query, sort, direction)
+                .stream()
+                .map(RecipeResponse::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(recipes);
+    }
+
     @PostMapping(value = "/create", consumes = "application/json", produces = "application/json")
     ResponseEntity<RecipeResponse> create(@RequestBody RecipeModel recipeModel, Principal principal) {
         Recipe recipe = recipeService.create(principal.getName(), recipeModel);
