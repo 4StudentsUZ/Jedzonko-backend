@@ -10,8 +10,10 @@ import java.util.List;
 
 public interface RecipeRepository extends JpaRepository<Recipe, Long> {
     @Query(value = "SELECT DISTINCT r " +
-            "FROM Recipe r, IN(r.tags) t " +
+            "FROM Recipe r, IN(r.tags) t, IN(r.author) a " +
             "WHERE LOWER(r.title) LIKE LOWER(CONCAT('%', :query,'%')) " +
-            "OR LOWER(t) LIKE LOWER(CONCAT('%', :query, '%'))")
+            "OR LOWER(t) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "OR LOWER(a.firstName) LIKE LOWER(CONCAT('%', :query, '%')) " +
+            "OR LOWER(a.lastName) LIKE LOWER(CONCAT('%', :query, '%')) ")
     List<Recipe> findAllByQuery(@Param("query") String query);
 }
