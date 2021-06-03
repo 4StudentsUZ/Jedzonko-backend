@@ -79,15 +79,20 @@ public class UserService {
         userEntity.setEnabled(!isAccountActivationRequired());
         userRepository.save(userEntity);
 
-        if (isAccountActivationRequired()) {
-            RecoveryToken token = generateRegistrationToken(userEntity);
-            userEntity.setActivationToken(token.getToken());
-            userRepository.save(userEntity);
+        try {
+            if (isAccountActivationRequired()) {
+                RecoveryToken token = generateRegistrationToken(userEntity);
+                userEntity.setActivationToken(token.getToken());
+                userRepository.save(userEntity);
 
-            String subject = "Activate your Jedzonko.pl account";
-            String body = "Open this link to activate your jedzonko.pl account: ";
-            body += "https://uz-recipes-rest.herokuapp.com/users/activate?token=" + token.getToken();
-            sendEmail(userEntity.getUsername(), subject, body);
+                String subject = "Activate your Jedzonko.pl account";
+                String body = "Open this link to activate your jedzonko.pl account: ";
+                body += "https://uz-recipes-rest.herokuapp.com/users/activate?token=" + token.getToken();
+                sendEmail(userEntity.getUsername(), subject, body);
+            }
+        } catch (Exception e) {
+            userRepository.delete(userEntity);
+            throw new SendingEmailException("Failed to send a confirmation e-mail");
         }
 
         return userEntity;
