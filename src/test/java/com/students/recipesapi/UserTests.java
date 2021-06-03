@@ -151,7 +151,7 @@ public class UserTests {
         UserEntity userEntity = new UserEntity(testEmail, "Jan", "Kowalski", testPassword);
         RecoveryToken registrationToken = new RecoveryToken(0L, testUUIDToken, userEntity, LocalDateTime.now(ZoneId.of("Europe/Warsaw")).plusDays(1));
         userEntity.setActivationToken(registrationToken.getToken());
-        when(tokenRepository.findByToken(testUUIDToken)).thenReturn(Optional.of(registrationToken));
+        when(tokenRepository.findRecoveryTokenByToken(testUUIDToken)).thenReturn(Optional.of(registrationToken));
 
         //when
         userService.activate(userEntity.getActivationToken());
@@ -164,7 +164,7 @@ public class UserTests {
     void activate_TokenHasExpired_ThrowExpiredTokenException() {
         //given
         testUserEntity.setActivationToken(testUUIDToken);
-        when(tokenRepository.findByToken(testUUIDToken)).thenReturn(Optional.empty());
+        when(tokenRepository.findRecoveryTokenByToken(testUUIDToken)).thenReturn(Optional.empty());
 
         //when
         ExpiredTokenException result = assertThrows(
@@ -180,7 +180,7 @@ public class UserTests {
     void activate_TokenIsNull_ThrowExpiredTokenException() {
         //given
         testUserEntity.setActivationToken(testUUIDToken);
-        when(tokenRepository.findByToken(testUUIDToken)).thenReturn(Optional.empty());
+        when(tokenRepository.findRecoveryTokenByToken(testUUIDToken)).thenReturn(Optional.empty());
 
         //when
         ExpiredTokenException result = assertThrows(

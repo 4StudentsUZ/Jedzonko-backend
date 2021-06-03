@@ -79,28 +79,30 @@ public class UserService {
         userEntity.setEnabled(!isAccountActivationRequired());
         userRepository.save(userEntity);
 
-        try {
             if (isAccountActivationRequired()) {
-                RecoveryToken token = generateRegistrationToken(userEntity);
-                userEntity.setActivationToken(token.getToken());
-                userRepository.save(userEntity);
+                RecoveryToken token = null;
+                try {
+                    token = generateRegistrationToken(userEntity);
+                    userEntity.setActivationToken(token.getToken());
+                    userRepository.save(userEntity);
 
-                String subject = "Activate your Jedzonko.pl account";
-                String body = "Open this link to activate your jedzonko.pl account: ";
-                body += "https://uz-recipes-rest.herokuapp.com/users/activate?token=" + token.getToken();
-                sendEmail(userEntity.getUsername(), subject, body);
+                    String subject = "Activate your Jedzonko.pl account";
+                    String body = "Open this link to activate your jedzonko.pl account: ";
+                    body += "https://uz-recipes-rest.herokuapp.com/users/activate?token=" + token.getToken();
+                    sendEmail(userEntity.getUsername(), subject, body);
+                } catch (Exception e) {
+                    recoveryTokenRepository.delete(token);
+                    userRepository.delete(userEntity);
+                    throw new SendingEmailException("Failed to send a confirmation e-mail");
+                }
             }
-        } catch (Exception e) {
-            userRepository.delete(userEntity);
-            throw new SendingEmailException("Failed to send a confirmation e-mail");
-        }
 
         return userEntity;
     }
 
     public void activate(String token) {
         RecoveryToken recoveryToken = recoveryTokenRepository
-                .findByToken(token)
+                .findRecoveryTokenByToken(token)
                 .orElseThrow(() -> new ExpiredTokenException("This activation link has expired or never existed, please create a new account."));
 
         recoveryToken.getUserEntity().setEnabled(true);
@@ -149,7 +151,7 @@ public class UserService {
         validateUsername(recoveryModel.getUsername());
         validatePassword(recoveryModel.getPassword());
 
-        RecoveryToken recoveryToken = recoveryTokenRepository.findByToken(recoveryModel.getToken())
+        RecoveryToken recoveryToken = recoveryTokenRepository.findRecoveryTokenByToken(recoveryModel.getToken())
                 .orElseThrow(() -> new ExpiredTokenException("Recovery token has expired or never existed."));
 
         if (recoveryToken.getExpirationDate().isBefore(LocalDateTime.now(ZoneId.of("Europe/Warsaw")))) {

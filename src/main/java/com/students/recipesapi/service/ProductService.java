@@ -28,15 +28,6 @@ public class ProductService {
     }
 
     @Transactional
-    public List<Product> findAllById(List<Long> ids) {
-        try {
-            return productRepository.findAllById(ids);
-        } catch (Exception e) {
-            throw new NotFoundException("Couldn't find all desired products.");
-        }
-    }
-
-    @Transactional
     public Product findById(Long id) {
         return productRepository
                 .findById(id)
