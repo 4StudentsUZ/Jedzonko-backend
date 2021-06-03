@@ -170,6 +170,10 @@ public class UserService {
         userEntity.setEnabled(false);
 
         userRepository.save(userEntity);
+
+        String subject = "Your Jedzonko.pl account has been deleted";
+        String body = "Your Jedzonko.pl account has been deleted through the application.";
+        sendEmail(username, subject, body);
     }
 
     public void sendEmail(String toEmail, String subject, String body) {
