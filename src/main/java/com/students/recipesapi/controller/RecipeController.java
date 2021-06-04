@@ -63,7 +63,7 @@ public class RecipeController {
         return ResponseEntity.ok("Successfully updated the recipe.");
     }
 
-    @DeleteMapping(value = "/delete/{recipeId}", consumes = "application/json", produces = "application/json")
+    @DeleteMapping(value = "/delete/{recipeId}", produces = "application/json")
     ResponseEntity<String> delete(@PathVariable Long recipeId, Principal principal) {
         recipeService.delete(principal.getName(), recipeId);
         return ResponseEntity.ok("Successfully deleted the recipe.");
