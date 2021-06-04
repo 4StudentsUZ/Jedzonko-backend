@@ -122,7 +122,10 @@ public class RecipeService {
         Recipe recipe = findById(recipeId);
         UserEntity author = userService.findByUsername(username);
         validateAuthorMatch(author, recipe);
-        recipeRepository.delete(recipe);
+        for (RecipeIngredient ingredient : recipe.getIngredients()) {
+            ingredientRepository.delete(ingredient);
+        }
+        recipeRepository.deleteById(recipeId);
     }
 
     public Recipe update(String username, RecipeModel recipeModel) {
