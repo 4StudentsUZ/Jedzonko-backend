@@ -3,6 +3,7 @@ package com.students.recipesapi.model;
 import com.students.recipesapi.entity.Product;
 import com.students.recipesapi.entity.Recipe;
 import com.students.recipesapi.entity.RecipeIngredient;
+import com.students.recipesapi.entity.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class RecipeResponse {
     private Long id;
     private String title;
     private String description;
+    private UserEntity author;
     private List<Product> ingredients;
     private List<String> quantities;
     private Set<String> tags;
@@ -29,6 +31,7 @@ public class RecipeResponse {
         this.id = recipe.getId();
         this.title = recipe.getTitle();
         this.description = recipe.getDescription();
+        this.author = recipe.getAuthor();
         this.ingredients = recipe.getIngredients().stream().map(RecipeIngredient::getProduct).collect(Collectors.toList());
         this.quantities = recipe.getIngredients().stream().map(RecipeIngredient::getQuantity).collect(Collectors.toList());
         this.tags = recipe.getTags();
