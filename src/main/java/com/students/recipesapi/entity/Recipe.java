@@ -2,7 +2,9 @@ package com.students.recipesapi.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.students.recipesapi.exception.Base64DecodingException;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -13,6 +15,8 @@ import java.util.*;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Recipe {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
