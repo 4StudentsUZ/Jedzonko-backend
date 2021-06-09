@@ -80,9 +80,8 @@ public class UserService {
         userRepository.save(userEntity);
 
             if (isAccountActivationRequired()) {
-                RecoveryToken token = null;
+                RecoveryToken token = generateRegistrationToken(userEntity);
                 try {
-                    token = generateRegistrationToken(userEntity);
                     userEntity.setActivationToken(token.getToken());
                     userRepository.save(userEntity);
 
@@ -91,6 +90,7 @@ public class UserService {
                     body += "https://uz-recipes-rest.herokuapp.com/users/activate?token=" + token.getToken();
                     sendEmail(userEntity.getUsername(), subject, body);
                 } catch (Exception e) {
+                    System.out.println(e.getMessage());
                     recoveryTokenRepository.delete(token);
                     userRepository.delete(userEntity);
                     throw new SendingEmailException("Failed to send a confirmation e-mail");
