@@ -5,6 +5,7 @@ import com.students.recipesapi.repository.ProductRepository;
 import com.students.recipesapi.repository.RecipeIngredientRepository;
 import com.students.recipesapi.repository.RecipeRepository;
 import com.students.recipesapi.repository.UserRepository;
+import org.h2.util.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -15,6 +16,7 @@ import org.springframework.core.io.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -189,7 +191,7 @@ public class LoadDatabase {
                             "Smaczne i proste pierogi ze wschodu",
                             jan,
                             Collections.emptySet(),
-                            Set.of("Drugie Danie"),
+                            new LinkedHashSet<>(Arrays.asList("Drugie Danie")),
                             loadImage("pierogi.png"),
                             LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString(),
                             LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString(),
@@ -206,7 +208,7 @@ public class LoadDatabase {
                             "Niebanalna Margherita na grubym cieście",
                             jan,
                             Collections.emptySet(),
-                            Set.of("Z pieca"),
+                            new LinkedHashSet<>(Arrays.asList("Z pieca")),
                             loadImage("pizza.png"),
                             LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString(),
                             LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString(),
@@ -223,7 +225,7 @@ public class LoadDatabase {
                             "Tradycyjny polski chabowy z ziemniakami",
                             jan,
                             Collections.emptySet(),
-                            Set.of("Mięso", "Drugie danie"),
+                            new LinkedHashSet<>(Arrays.asList("Mięso", "Drugie danie")),
                             loadImage("schabowy.png"),
                             LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString(),
                             LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString(),
@@ -240,7 +242,7 @@ public class LoadDatabase {
                             "Przegląd tygodnia w sosie pomidorowym",
                             jan,
                             Collections.emptySet(),
-                            Set.of("Szybkie", "Mięso"),
+                            new LinkedHashSet<>(Arrays.asList("Szybkie", "Mięso")),
                             loadImage("spaghetii.png"),
                             LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString(),
                             LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString(),
@@ -257,7 +259,7 @@ public class LoadDatabase {
                             "Szybki żurek z kiełbasą i jajkiem",
                             jan,
                             Collections.emptySet(),
-                            Set.of("Zupa"),
+                            new LinkedHashSet<>(Arrays.asList("Zupa")),
                             loadImage("żurek.png"),
                             LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString(),
                             LocalDateTime.now(ZoneId.of("Europe/Warsaw")).toString(),
@@ -294,7 +296,7 @@ public class LoadDatabase {
         Resource resource = new ClassPathResource("examples/" + imageName);
         try {
             InputStream input = resource.getInputStream();
-            return input.readAllBytes();
+            return IOUtils.readBytesAndClose(input, (int) resource.contentLength());
         } catch (IOException e) {
             e.printStackTrace();
         }
