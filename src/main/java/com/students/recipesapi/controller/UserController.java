@@ -52,12 +52,12 @@ public class UserController {
         return ResponseEntity.ok(userService.update(username, userUpdateModel));
     }
 
-    @PostMapping(value = "/recovery", consumes = "application/json", produces = "application/json")
+    @PostMapping(value = "/recovery", consumes = "application/json")
     void recovery(@RequestBody RecoveryRequestModel recoveryRequestModel) {
         userService.sendRecoveryToken(recoveryRequestModel.getUsername());
     }
 
-    @PostMapping(value = "/reset", consumes = "application/json", produces = "application/json")
+    @PostMapping(value = "/reset", consumes = "application/json")
     void recovery(@RequestBody RecoveryModel recoveryModel) {
         userService.resetPassword(recoveryModel);
     }
