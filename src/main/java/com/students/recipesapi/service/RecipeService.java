@@ -4,6 +4,7 @@ import com.students.recipesapi.entity.*;
 import com.students.recipesapi.exception.InvalidInputException;
 import com.students.recipesapi.exception.NotFoundException;
 import com.students.recipesapi.model.RecipeModel;
+import com.students.recipesapi.repository.CommentRepository;
 import com.students.recipesapi.repository.RatingRepository;
 import com.students.recipesapi.repository.RecipeIngredientRepository;
 import com.students.recipesapi.repository.RecipeRepository;
@@ -18,13 +19,15 @@ import java.util.*;
 @Service
 public class RecipeService {
     private final RecipeRepository recipeRepository;
+    private final CommentRepository commentRepository;
     private final RecipeIngredientRepository ingredientRepository;
     private final UserService userService;
     private final ProductService productService;
     private final RatingRepository ratingRepository;
 
-    public RecipeService(RecipeRepository recipeRepository, RecipeIngredientRepository ingredientRepository, UserService userService, ProductService productService, RatingRepository ratingRepository) {
+    public RecipeService(RecipeRepository recipeRepository, CommentRepository commentRepository, RecipeIngredientRepository ingredientRepository, UserService userService, ProductService productService, RatingRepository ratingRepository) {
         this.recipeRepository = recipeRepository;
+        this.commentRepository = commentRepository;
         this.ingredientRepository = ingredientRepository;
         this.userService = userService;
         this.productService = productService;
@@ -122,9 +125,9 @@ public class RecipeService {
         Recipe recipe = findById(recipeId);
         UserEntity author = userService.findByUsername(username);
         validateAuthorMatch(author, recipe);
-        for (RecipeIngredient ingredient : recipe.getIngredients()) {
-            ingredientRepository.delete(ingredient);
-        }
+        deleteIngredientsForRecipe(recipe);
+        deleteCommentsForRecipe(recipe);
+        deleteRatingsForRecipe(recipe);
         recipeRepository.deleteById(recipeId);
     }
 
@@ -163,6 +166,18 @@ public class RecipeService {
     public void deleteIngredientsForRecipe(Recipe recipe) {
         List<RecipeIngredient> ingredients = ingredientRepository.findByRecipeId(recipe.getId());
         ingredientRepository.deleteAll(ingredients);
+    }
+
+    @Transactional
+    public void deleteCommentsForRecipe(Recipe recipe) {
+        List<Comment> comments = commentRepository.findForRecipe(recipe.getId());
+        commentRepository.deleteAll(comments);
+    }
+
+    @Transactional
+    public void deleteRatingsForRecipe(Recipe recipe) {
+        List<Rating> ratings = ratingRepository.findForRecipe(recipe.getId());
+        ratingRepository.deleteAll(ratings);
     }
 
     private void validateRecipeModelForCreate(RecipeModel recipeModel) {
